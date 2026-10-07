@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MIK LEDGER</title>
+<style>
+:root{--bg:#eef1f2;--card:#fff;--ink:#1c272c;--mute:#5d6b72;--line:#c9d2d6;--head:#43b649;--headInk:#0d2a10;--tot:#1e3a5f;--totInk:#ffffff;--avg:#d3d8da;--neg:#b3402c;--pos:#1b7a4b;--calc:#f3f6f7;--sel:#e4f3e6;--btn:#1c272c;--btnInk:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12191c;--card:#1b262b;--ink:#e8eef0;--mute:#9aa9b0;--line:#33434a;--head:#2f8a35;--headInk:#f0fff1;--tot:#2f5f94;--totInk:#ffffff;--avg:#2a373d;--neg:#ef8a76;--pos:#4cc38a;--calc:#222f35;--sel:#23402a;--btn:#e8eef0;--btnInk:#12191c}}
+:root[data-theme="dark"]{--bg:#12191c;--card:#1b262b;--ink:#e8eef0;--mute:#9aa9b0;--line:#33434a;--head:#2f8a35;--headInk:#f0fff1;--tot:#2f5f94;--totInk:#ffffff;--avg:#2a373d;--neg:#ef8a76;--pos:#4cc38a;--calc:#222f35;--sel:#23402a;--btn:#e8eef0;--btnInk:#12191c}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{padding:12px;max-width:100%}
+h1{font-size:1.25rem;margin:4px 0 12px;display:inline-block;background:var(--tot);color:var(--totInk);padding:4px 14px;border-radius:4px;border-bottom:4px solid;border-image:linear-gradient(90deg,#43b649 33.33%,#f5bd4f 33.33% 66.66%,#d94141 66.66%) 1}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:12px;max-width:720px}
+label{display:block;font-size:.82rem;color:var(--mute);margin-bottom:3px}
+input,select{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 10px}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.go{width:100%;margin-top:10px;padding:11px;border:0;border-radius:8px;background:var(--btn);color:var(--btnInk);font:inherit;font-weight:600;cursor:pointer}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0}
+.row b{font-variant-numeric:tabular-nums}
+.del{background:none;border:0;color:var(--mute);cursor:pointer;font-size:1.2rem;padding:0 6px}
+.empty{color:var(--mute);padding:6px 0}
+.sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:10px;max-width:720px}
+.sum div{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.sum small{display:block;color:var(--mute);font-size:.78rem}
+.sum b{font-size:1.05rem;font-variant-numeric:tabular-nums}
+.wrap{overflow:auto;max-height:70vh;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+table{border-collapse:separate;border-spacing:0;font-size:.85rem;min-width:max-content}
+th,td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;padding:6px 8px;font-variant-numeric:tabular-nums}
+th{position:sticky;top:0;z-index:2;background:var(--head);color:var(--headInk);font-weight:700}
+th:first-child,td:first-child{position:sticky;left:0;z-index:1;text-align:left;background:var(--card);cursor:pointer}
+th:first-child{z-index:3;background:var(--head);cursor:default}
+td.c{background:var(--calc)}
+tr.s td{background:var(--sel)}tr.s td.c{background:var(--sel)}
+td.n{color:var(--neg);font-weight:600}td.p{color:var(--pos);font-weight:600}
+tr.t td{background:#f5bd4f;color:#2b1a00;font-weight:700;cursor:default}
+tr.a td{background:#d94141;color:#fff;font-weight:600;cursor:default}
+.set{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+.set div{width:150px}
+[hidden]{display:none!important}
+.rr{display:grid;grid-template-columns:1fr 96px 96px;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
+.rr.h{font-weight:700;border-top:0;margin-top:10px}
+.rr span+span{text-align:right}
+.rr.h span{padding:4px 8px;border-radius:6px}
+.rr.h span:first-child{background:#43b649;color:#0d2a10}
+.rr.h .tcol{background:#f5bd4f;color:#2b1a00}
+.rr.h .acol{background:#d94141;color:#fff}
+.rr.one{grid-template-columns:1fr 110px}
+.note{color:var(--mute);font-size:.82rem;margin:10px 0;max-width:720px}
+.ghost{background:var(--card);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px 12px;font:inherit;cursor:pointer}
+textarea{width:100%;max-width:720px;height:100px;margin-top:8px;font:12px/1.4 ui-monospace,monospace;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px;display:block}
+
+body{display:flex}
+#nav{position:sticky;top:0;height:100vh;height:100dvh;width:74px;flex:none;background:var(--card);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 0;overflow-y:auto}
+.logo{width:46px;height:46px;border-radius:10px;margin-bottom:10px;display:block}
+#nav button{width:66px;background:none;border:0;color:var(--mute);font:inherit;font-size:.72rem;padding:8px 2px;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
+#nav button.on{color:var(--ink);background:var(--sel);font-weight:700}
+main{flex:1;min-width:0}
+.top{display:flex;justify-content:space-between;align-items:end;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.top h1{margin:0}
+.top div{width:160px}
+.v{display:none}.v.on{display:block}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
+.ch{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.chh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:4px}
+.chh h3{margin:0;font-size:1rem}
+.chh b{font-variant-numeric:tabular-nums;font-size:.95rem}
+.ch svg{width:100%;height:auto;display:block}
+.ch text{fill:var(--mute);font-size:11px}
+.top .pc{width:auto;display:flex;gap:8px;flex-wrap:wrap;align-items:end}
+.top .pc div{width:150px}
+.edit{background:none;border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:2px 8px;font:inherit;font-size:.8rem;cursor:pointer;margin-left:10px}
+.cf{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
+.cfb{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;max-width:340px;width:100%}
+.cfb p{margin:0 0 4px}
+.cfa{display:flex;gap:10px;margin-top:12px}
+.cfa button{flex:1;margin:0;width:auto}
+.cfa .dng{background:var(--neg);color:#fff}
+.nt{display:block;color:var(--mute);font-size:.82rem}
+.er{display:grid;grid-template-columns:62px 1fr auto;gap:8px;padding:7px 0;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
+.er:first-of-type{border-top:0}
+.se{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin-top:12px}
+.se .card{margin:0}
+.se .sr{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line,rgba(128,128,128,.25));font-size:.95rem}
+.se .sr.tt{font-weight:700;border-bottom:0;padding-top:10px}
+.se .sr span:last-child{font-variant-numeric:tabular-nums}
+.se .sr.z{opacity:.55}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+<nav id="nav" aria-label="Main">
+  <img class="logo" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5NiA5NiI+PHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiByeD0iMjIiIGZpbGw9IiMxZTNhNWYiLz48dGV4dCB4PSI0OCIgeT0iNTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJBcmlhbCxIZWx2ZXRpY2Esc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjgwMCIgZm9udC1zaXplPSIzMyIgZmlsbD0iI2ZmZmZmZiI+TUlLPC90ZXh0PjxyZWN0IHg9IjIzIiB5PSI2OSIgd2lkdGg9IjE1LjMiIGhlaWdodD0iNCIgcng9IjIiIGZpbGw9IiM0M2I2NDkiLz48cmVjdCB4PSI0MC4zIiB5PSI2OSIgd2lkdGg9IjE1LjMiIGhlaWdodD0iNCIgcng9IjIiIGZpbGw9IiNmNWJkNGYiLz48cmVjdCB4PSI1Ny43IiB5PSI2OSIgd2lkdGg9IjE1LjMiIGhlaWdodD0iNCIgcng9IjIiIGZpbGw9IiNkOTQxNDEiLz48L3N2Zz4=" alt="MIK LEDGER logo" width="46" height="46">
+  <button type="button" data-v="dash"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="4" rx="1.5"/><rect x="13" y="10" width="7" height="10" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/></svg>Dashboard</button>
+  <button type="button" data-v="home" class="on" aria-current="page"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9H4z"/><path d="M10 20v-6h4v6"/></svg>Home</button>
+  <button type="button" data-v="reports"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M7 15l4-4 3 3 5-6"/></svg>Reports</button>
+  <button type="button" data-v="sheet"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M4 15h16M10 4v16"/></svg>Sheet</button>
+  <button type="button" data-v="more"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/></svg>More</button>
+</nav>
+<main>
+<div class="top">
+  <h1>MIK LEDGER</h1>
+  <div class="pc">
+    <div><label for="pm">Period</label><select id="pm"><option value="month">Month</option><option value="range">Date range</option></select></div>
+    <div id="pmonth"><label for="m">Month</label><input type="month" id="m"></div>
+    <div id="prange" hidden><label for="pf">From</label><input type="date" id="pf"></div>
+    <div id="prange2" hidden><label for="pt">To</label><input type="date" id="pt"></div>
+  </div>
+</div>
+<p class="note" id="pmsg" hidden>Pick a start and end date. The start date must come first.</p>
+
+<section class="v on" id="v-home">
+  <div class="card">
+    <div class="g">
+      <div><label for="d">Date (pick from calendar)</label><input type="date" id="d"></div>
+      <div><label for="h">Entry type</label>
+        <select id="h">
+          <optgroup label="Sale">
+            <option value="sale">Sale</option><option value="cash">Cash Sale</option><option value="ocash">Other Sale</option>
+          </optgroup>
+          <optgroup label="Expense">
+            <option value="fuel">Fuel</option><option value="food">Food</option><option value="mobile">Mobile</option><option value="topup">Top up</option><option value="toll">M Tag/Toll</option><option value="salary">Salary</option><option value="maint">Maintenance</option><option value="oexp">Other Expense</option>
+          </optgroup>
+          <option value="withdrawal">Withdrawal</option>
+          <optgroup label="Meter">
+            <option value="litre">Fuel (litres)</option><option value="lastrun">Last Running (odometer)</option><option value="todayrun">Today Running (odometer)</option><option value="run">Running (km, direct)</option>
+          </optgroup>
+        </select></div>
+    </div>
+    <div style="margin-top:10px"><label for="a">Amount</label><input type="number" id="a" inputmode="decimal" step="any" min="0" placeholder="0"></div>
+    <div style="margin-top:10px"><label for="n">Description (optional)</label><input type="text" id="n" maxlength="80" placeholder="e.g. petrol pump, customer name"></div>
+    <button class="go" id="add" type="button">Save entry</button>
+    <button class="ghost" id="cancel" type="button" hidden style="width:100%;margin-top:8px">Cancel edit</button>
+  </div>
+  <div class="card">
+    <b id="dt">Entries for this day</b>
+    <div id="list"></div>
+  </div>
+  <div class="set">
+    <div><label for="rate">Rate per km (Rs)</label><input type="number" id="rate" inputmode="decimal" value="42"></div>
+    <div><label for="pct">Charity % (of Profit/Loss)</label><input type="number" id="pct" inputmode="decimal" value="2.5" step="0.1"></div>
+  </div>
+  <div class="sum" aria-live="polite">
+    <div><small>Total Sale</small><b id="s1">0</b></div>
+    <div><small>Total Expenses</small><b id="s2">0</b></div>
+    <div><small>Profit/Loss</small><b id="s3">0</b></div>
+    <div><small>Earnings per km (whole period)</small><b id="s4">0</b></div>
+    <div><small>Daily average per km</small><b id="s5">0</b></div>
+  </div>
+  <div class="se" aria-live="polite">
+    <div class="card"><b>Sales &amp; Expenses Ledger</b><div id="sel"></div><button class="ghost" id="ldl" type="button" style="width:100%;margin-top:10px">Download ledger &amp; entries (PDF / Excel)</button></div>
+  </div>
+</section>
+
+<section class="v" id="v-dash">
+  <div class="charts" id="charts"></div>
+</section>
+
+<section class="v" id="v-reports">
+  <div class="card">
+    <b>Download report</b>
+    <div class="g" style="margin-top:10px">
+      <div><label for="dfrom">From (date)</label><input type="date" id="dfrom"></div>
+      <div><label for="dto">To (date)</label><input type="date" id="dto"></div>
+    </div>
+    <div style="margin-top:10px"><label for="dwhat">What to download</label>
+      <select id="dwhat"><option value="all">Full report (everything)</option><option value="ledger">Ledger only (Sale &amp; Expenses)</option><option value="entries">Entries only (with descriptions)</option></select></div>
+    <div style="margin-top:10px"><label for="dfmt">Download as</label>
+      <select id="dfmt"><option value="">Choose format...</option><option value="pdf">PDF</option><option value="xls">Excel (.xlsx)</option></select></div>
+    <p class="note" id="dm" aria-live="polite" style="margin-bottom:0">Pick the dates, what to download, then PDF or Excel.</p>
+  </div>
+  <div class="card">
+    <div><label for="rm">Average / Report</label>
+      <select id="rm">
+        <option value="daily">Daily average</option>
+        <option value="monthly">Total</option>
+        <option value="range">Average + total</option>
+      </select></div>
+    <div id="rep"></div>
+  </div>
+  <div class="card">
+    <b>Entries with descriptions</b>
+    <div id="ent" style="margin-top:6px"></div>
+  </div>
+</section>
+
+<section class="v" id="v-sheet">
+  <div class="wrap"><table id="tb"></table></div>
+  <p class="note">Rs per km: the Total row divides the month's sales by the month's km, and the Avg/day row is the average of each day's rate (only days with km entered). Tap any date in the table to open that day in Create. Several entries of the same type on one day (like two fuel fills) are added together automatically.</p>
+</section>
+
+<section class="v" id="v-more">
+  <div class="card">
+    <button class="ghost" id="csv" type="button">Copy this month's CSV</button>
+    <textarea id="out" hidden readonly aria-label="CSV"></textarea>
+    <p class="note">Data is saved only in this browser. Copy the CSV at the end of each month and keep it somewhere safe.</p>
+  </div>
+</section>
+</main>
+<div id="cf" class="cf" hidden role="dialog" aria-modal="true" aria-labelledby="cft">
+  <div class="cfb">
+    <p id="cft">Are you sure you want to delete this entry?</p>
+    <div class="cfa">
+      <button class="ghost" id="cfn" type="button">Cancel</button>
+      <button class="go dng" id="cfy" type="button">Yes, delete</button>
+    </div>
+  </div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const KEY="indrive-hisab-v1",SET="indrive-hisab-set";
+const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const NAME={sale:"Sale",cash:"Cash Sale",ocash:"Other Sale",oexp:"Other Expense",fuel:"Fuel",food:"Food",mobile:"Mobile",topup:"Top up",toll:"M Tag/Toll",salary:"Salary",maint:"Maintenance",withdrawal:"Withdrawal",litre:"Fuel (litres)",lastrun:"Last Running",todayrun:"Today Running",run:"Running (km, direct)"};
+const COLS=["sale","cash","ocash","tsale","fuel","food","mobile","topup","toll","salary","maint","oexp","texp","pl","charity","withdrawal","litre","lastrun","todayrun","run","erun","diff","perkm"];
+const CALC=["tsale","texp","pl","charity","run","erun","diff","perkm"];
+const ODO=["lastrun","todayrun"];
+const LBL=Object.assign({tsale:"Total Sale",texp:"Total Expenses",pl:"Profit/Loss",charity:"Charity",erun:"Earning on Running",diff:"Difference",perkm:"Rs per km"},NAME);
+LBL.run="Total Running (km)";
+let E=[],S={rate:42,pct:2.5};
+try{E=JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){}
+E.forEach(e=>{if(e.head==="home"||e.head==="personal"||e.head==="other")e.head="withdrawal"});
+try{S=Object.assign(S,JSON.parse(localStorage.getItem(SET)||"{}"))}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(E));localStorage.setItem(SET,JSON.stringify(S))}catch(e){}}
+const num=v=>parseFloat(v)||0;
+const f=n=>Math.round(n).toLocaleString("en-PK");
+const fm=(k,v)=>k==="perkm"?(v?v.toFixed(1):"-"):f(v);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function addTo(r,e){if(e.head==="lastrun"||e.head==="todayrun")r[e.head]=e.amt;else r[e.head]=(r[e.head]||0)+e.amt}
+function odo(by,dates){let first=0,last=0;dates.forEach(d=>{const r=by[d];if(!r)return;if(!first&&r.lastrun>0)first=r.lastrun;if(r.todayrun>0)last=r.todayrun});return{first,last}}
+const two=n=>String(n).padStart(2,"0");
+function calc(r){
+  const g=k=>r[k]||0,o={};
+  o.tsale=g("sale")+g("cash")+g("ocash");
+  o.texp=g("fuel")+g("food")+g("mobile")+g("topup")+g("toll")+g("salary")+g("maint")+g("oexp");
+  o.pl=o.tsale-o.texp;
+  o.charity=Math.round(o.pl*S.pct/100);
+  o.run=(g("todayrun")>0&&g("lastrun")>0)?g("todayrun")-g("lastrun"):g("run");
+  o.erun=o.run*S.rate;
+  o.diff=o.tsale-o.erun;
+  o.perkm=o.run>0?o.tsale/o.run:0;
+  return o;
+}
+const now=new Date(),iso=now.getFullYear()+"-"+two(now.getMonth()+1)+"-"+two(now.getDate());
+$("d").value=iso;$("m").value=iso.slice(0,7);$("pf").value=iso.slice(0,7)+"-01";$("pt").value=iso;$("rate").value=S.rate;$("pct").value=S.pct;
+
+function prefillLast(){
+  if(editId||$("h").value!=="lastrun"||$("a").value)return;
+  const d=$("d").value;
+  const prev=E.filter(e=>e.head==="todayrun"&&e.date<d).sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:b.id-a.id)[0];
+  if(prev)$("a").value=prev.amt;
+}
+$("h").onchange=prefillLast;
+let pendingDel=null;
+function askDelete(x){pendingDel=x.id;$("cft").textContent="Are you sure you want to delete "+NAME[x.head]+" "+f(x.amt)+" on "+x.date+"?";$("cf").hidden=false;$("cfn").focus()}
+$("cfn").onclick=()=>{pendingDel=null;$("cf").hidden=true};
+$("cf").onclick=e=>{if(e.target===$("cf"))$("cfn").click()};
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("cf").hidden)$("cfn").click()});
+$("cfy").onclick=()=>{const id=pendingDel;pendingDel=null;$("cf").hidden=true;if(id==null)return;if(editId===id)stopEdit();E=E.filter(e=>e.id!==id);save();render()};
+let editId=null;
+function stopEdit(){editId=null;$("add").textContent="Save entry";$("cancel").hidden=true}
+$("cancel").onclick=()=>{stopEdit();$("a").value="";$("n").value=""};
+[$("a"),$("n")].forEach(i=>i.addEventListener("keydown",e=>{if(e.key==="Enter")$("add").click()}));
+$("add").onclick=()=>{
+  const a=num($("a").value);
+  if(a<=0){$("a").focus();return}
+  if(!$("d").value)return $("d").focus();
+  if(editId){const x=E.find(e=>e.id===editId);if(x){x.date=$("d").value;x.head=$("h").value;x.amt=a;x.note=$("n").value.trim()}stopEdit()}
+  else E.push({id:Date.now(),date:$("d").value,head:$("h").value,amt:a,note:$("n").value.trim()});
+  $("a").value="";$("n").value="";if($("pm").value==="month")$("m").value=$("d").value.slice(0,7);
+  save();render();$("a").focus();
+};
+$("d").onchange=()=>{if($("d").value&&$("pm").value==="month")$("m").value=$("d").value.slice(0,7);prefillLast();render()};
+function period(){
+  const mode=$("pm").value;let from,to;
+  if(mode==="range"){from=$("pf").value;to=$("pt").value}
+  else{const mv=$("m").value;from=mv+"-01";to=mv+"-"+two(new Date(Number(mv.slice(0,4)),Number(mv.slice(5,7)),0).getDate())}
+  const dates=[];
+  if(from&&to&&from<=to){
+    let t=new Date(from+"T00:00:00");const b=new Date(to+"T00:00:00");
+    for(let i=0;t<=b&&i<732;i++){dates.push(t.getFullYear()+"-"+two(t.getMonth()+1)+"-"+two(t.getDate()));t=new Date(t.getFullYear(),t.getMonth(),t.getDate()+1)}
+  }
+  return{mode,from,to,dates};
+}
+function syncDl(){const P=period();if(P.dates.length){$("dfrom").value=P.from;$("dto").value=P.to}}
+function ctl(){const r=$("pm").value==="range";$("pmonth").hidden=r;$("prange").hidden=!r;$("prange2").hidden=!r}
+const onP=()=>{ctl();syncDl();render()};
+$("pm").onchange=onP;$("m").onchange=onP;$("pf").onchange=onP;$("pt").onchange=onP;
+$("rate").oninput=e=>{S.rate=num(e.target.value);save();render()};
+$("pct").oninput=e=>{S.pct=num(e.target.value);save();render()};
+
+function render(){
+  const P=period(),dv=$("d").value,{from,to,dates}=P;
+  $("pmsg").hidden=P.mode!=="range"||dates.length>0;
+  const day=E.filter(e=>e.date===dv);
+  $("dt").textContent=dv?"Entries: "+Number(dv.slice(8))+"-"+MON[Number(dv.slice(5,7))-1]+"-"+dv.slice(0,4):"Entries for this day";
+  $("list").innerHTML=day.length?day.map(e=>`<div class="row"><span>${NAME[e.head]}${e.note?`<small class="nt">${esc(e.note)}</small>`:""}</span><span><b>${f(e.amt)}</b>${e.head==="litre"?" L":e.head==="run"?" km":""}<button class="edit" data-id="${e.id}" aria-label="Edit entry">Edit</button><button class="del" data-id="${e.id}" aria-label="Delete entry">&times;</button></span></div>`).join(""):`<div class="empty">No entries for this day. Add the first one above.</div>`;
+  document.querySelectorAll(".del").forEach(b=>b.onclick=()=>{const x=E.find(e=>e.id==b.dataset.id);if(x)askDelete(x)});
+  document.querySelectorAll(".edit").forEach(b=>b.onclick=()=>{
+    const x=E.find(e=>e.id==b.dataset.id);if(!x)return;
+    editId=x.id;$("d").value=x.date;$("h").value=x.head;$("a").value=x.amt;$("n").value=x.note||"";
+    $("add").textContent="Update entry";$("cancel").hidden=false;
+    $("a").focus();$("a").select();window.scrollTo(0,0);
+  });
+  const by={};
+  E.forEach(e=>{if(dates.length&&e.date>=from&&e.date<=to){addTo(by[e.date]=by[e.date]||{},e)}});
+  const T={};COLS.forEach(k=>T[k]=0);let active=0,rs=0,rd=0;
+  let h="<thead><tr><th>Date</th>"+COLS.map(k=>`<th>${LBL[k]}</th>`).join("")+"</tr></thead><tbody>";
+  dates.forEach(key=>{
+    const r=by[key]||{},c=calc(r);
+    if(c.tsale)active++;
+    if(c.run>0){rs+=c.perkm;rd++}
+    h+=`<tr${key===dv?' class="s"':""}><td data-date="${key}">${key.slice(8)}-${MON[Number(key.slice(5,7))-1]}-${key.slice(0,4)}</td>`+COLS.map(k=>{
+      const v=CALC.includes(k)?c[k]:(r[k]||0);T[k]+=v;
+      const cls=CALC.includes(k)?"c"+((k==="pl"||k==="diff"||k==="charity")&&v<0?" n":(k==="pl"&&v>0?" p":"")):"";
+      return `<td class="${cls}">${v||CALC.includes(k)?fm(k,v):""}</td>`}).join("")+"</tr>";
+  });
+  T.perkm=T.run>0?T.tsale/T.run:0;
+  {const od=odo(by,dates);T.lastrun=od.first;T.todayrun=od.last}
+  h+=`<tr class="t"><td>Total</td>`+COLS.map(k=>`<td>${fm(k,T[k])}</td>`).join("")+"</tr>";
+  h+=`<tr class="a"><td>Avg/day</td>`+COLS.map(k=>`<td>${ODO.includes(k)?"":k==="perkm"?fm(k,rd?rs/rd:0):active?f(T[k]/active):0}</td>`).join("")+"</tr></tbody>";
+  $("tb").innerHTML=h;
+  $("tb").querySelectorAll("td[data-date]").forEach(td=>td.onclick=()=>{$("d").value=td.dataset.date;render();show("home")});
+  $("s1").textContent="Rs "+f(T.tsale);$("s2").textContent="Rs "+f(T.texp);$("s3").textContent="Rs "+f(T.pl);
+  $("s4").textContent=T.run>0?"Rs "+T.perkm.toFixed(1)+" / km":"-";
+  $("s5").textContent=rd?"Rs "+(rs/rd).toFixed(1)+" / km":"-";
+  $("s3").style.color=T.pl<0?"var(--neg)":"var(--pos)";
+  const srow=(k)=>`<div class="sr${T[k]?"":" z"}"><span>${NAME[k]}</span><span>${f(T[k])}</span></div>`;
+  $("sel").innerHTML=["sale","cash","ocash"].map(srow).join("")+`<div class="sr tt" style="color:var(--pos)"><span>Total Sale</span><span>Rs ${f(T.tsale)}</span></div>`+["fuel","food","mobile","topup","toll","salary","maint","oexp"].map(srow).join("")+`<div class="sr tt" style="color:var(--neg)"><span>Total Expenses</span><span>Rs ${f(T.texp)}</span></div><div class="sr tt" style="color:${T.pl<0?"var(--neg)":"var(--pos)"}"><span>Profit/Loss</span><span>Rs ${f(T.pl)}</span></div>`;
+  window._T={by,P};
+  report();
+  charts(by,P);
+}
+$("csv").onclick=()=>{
+  const {by,P}=window._T,L=[["Date"].concat(COLS.map(k=>LBL[k])).join(",")];
+  P.dates.forEach(key=>{const r=by[key]||{},c=calc(r);
+    L.push([key].concat(COLS.map(k=>{const v=CALC.includes(k)?c[k]:(r[k]||"");return v===""?"":Math.round(v*100)/100})).join(","));});
+  const o=$("out");o.value=L.join("\n");o.hidden=false;o.select();
+  try{navigator.clipboard.writeText(o.value)}catch(e){}
+};
+function agg(from,to){
+  const by={};
+  E.forEach(e=>{if(e.date>=from&&e.date<=to){addTo(by[e.date]=by[e.date]||{},e)}});
+  const T={};COLS.forEach(k=>T[k]=0);let active=0,rs=0,rd=0;
+  Object.keys(by).forEach(d=>{
+    const r=by[d],c=calc(r);
+    COLS.forEach(k=>{T[k]+=CALC.includes(k)?c[k]:(r[k]||0)});
+    if(c.tsale)active++;
+    if(c.run>0){rs+=c.perkm;rd++}
+  });
+  T.perkm=T.run>0?T.tsale/T.run:0;
+  {const od=odo(by,Object.keys(by).sort());T.lastrun=od.first;T.todayrun=od.last}
+  return{T,active,avgRate:rd?rs/rd:0};
+}
+function report(){
+  const mode=$("rm").value,P=period();
+  if(!P.dates.length){$("rep").innerHTML='<div class="empty">Pick a start and end date. The start date must come first.</div>';$("ent").innerHTML="";return}
+  const {T,active,avgRate}=agg(P.from,P.to);
+  const showT=mode!=="daily",showA=mode!=="monthly";
+  const cls="rr"+(showT&&showA?"":" one");
+  const cell=(k,a)=>a?(ODO.includes(k)?"":k==="perkm"?fm(k,avgRate):f(active?T[k]/active:0)):fm(k,T[k]);
+  let h=`<div class="${cls} h"><span>${P.from} to ${P.to}</span>${showT?"<span class=\"tcol\">Total</span>":""}${showA?"<span class=\"acol\">Avg/day</span>":""}</div>`;
+  h+=COLS.map(k=>`<div class="${cls}"><span>${LBL[k]}</span>${showT?`<span>${cell(k,false)}</span>`:""}${showA?`<span>${cell(k,true)}</span>`:""}</div>`).join("");
+  h+=`<div class="note" style="margin-bottom:0">Working days (days with sales entered): ${active}</div>`;
+  $("rep").innerHTML=h;
+  const ents=E.filter(e=>e.date>=P.from&&e.date<=P.to).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:a.id-b.id);
+  $("ent").innerHTML=ents.length?ents.map(e=>`<div class="er"><span>${e.date.slice(8)}-${MON[Number(e.date.slice(5,7))-1]}</span><span>${NAME[e.head]}${e.note?`<small class="nt">${esc(e.note)}</small>`:""}</span><b>${f(e.amt)}${e.head==="litre"?" L":e.head==="run"?" km":""}</b></div>`).join(""):'<div class="empty">No entries in this period.</div>';
+}
+function show(v){
+  document.querySelectorAll(".v").forEach(x=>x.classList.toggle("on",x.id==="v-"+v));
+  document.querySelectorAll("#nav button").forEach(b=>{const on=b.dataset.v===v;b.classList.toggle("on",on);if(on)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
+  window.scrollTo(0,0);
+}
+document.querySelectorAll("#nav button").forEach(b=>b.onclick=()=>show(b.dataset.v));
+$("rm").onchange=report;
+function charts(by,P){
+  const el=$("charts");if(!el)return;
+  const dates=P.dates,n=dates.length;
+  if(!n){el.innerHTML='<div class="empty">Pick a valid period.</div>';return}
+  const defs=[
+    {k:"tsale",t:"Sale",u:"Rs",c:"#2f9e44"},
+    {k:"texp",t:"Expenses",u:"Rs",c:"#d94141"},
+    {k:"pl",t:"Profit/Loss",u:"Rs",c:"#2f9e44",neg:"#e03131"},
+    {k:"charity",t:"Charity",u:"Rs",c:"#0b7285",neg:"#e03131"},
+    {k:"fuel",t:"Fuel",u:"Rs",c:"#4c8fd6"},
+    {k:"run",t:"Running",u:"km",c:"#6c757d"},
+    {k:"diff",t:"Difference",u:"Rs",c:"#2f9e44",neg:"#e03131"}];
+  const kf=v=>{const a=Math.abs(v);return a>=1000?(v/1000).toFixed(a>=10000?0:1).replace(".0","")+"k":String(Math.round(v))};
+  const nf=v=>Math.round(v).toLocaleString("en-PK");
+  const step=Math.max(1,Math.ceil(n/8));
+  const lab=d=>P.mode==="month"?String(Number(d.slice(8))):Number(d.slice(8))+"/"+Number(d.slice(5,7));
+  const showLab=i=>P.mode==="month"?(i===0||(i+1)%5===0):i%step===0;
+  el.innerHTML=defs.map(df=>{
+    const vals=dates.map(d=>{const r=by[d]||{};const c=calc(r);return CALC.includes(df.k)?c[df.k]:(r[df.k]||0)});
+    const tot=vals.reduce((a,b)=>a+b,0);
+    let max=Math.max(0,...vals),min=Math.min(0,...vals);
+    const empty=max===0&&min===0;if(empty)max=1;
+    const W=420,H=200,ml=40,mr=6,mt=10,mb=22,ph=H-mt-mb,bw=(W-ml-mr)/n;
+    const Y=v=>mt+ph*(max-v)/(max-min);
+    let g=[...new Set([max,(max+min)/2,min])].map(t=>`<line x1="${ml}" x2="${W-mr}" y1="${Y(t)}" y2="${Y(t)}" stroke="var(--line)"/><text x="${ml-5}" y="${Y(t)+4}" text-anchor="end">${kf(t)}</text>`).join("");
+    if(min<0)g+=`<line x1="${ml}" x2="${W-mr}" y1="${Y(0)}" y2="${Y(0)}" stroke="var(--mute)"/>`;
+    let b="";
+    vals.forEach((v,i)=>{
+      const x=ml+i*bw+bw*0.15,w=bw*0.7,y0=Y(0),yv=Y(v);
+      if(v!==0)b+=`<rect x="${x}" y="${Math.min(y0,yv)}" width="${w}" height="${Math.max(1,Math.abs(yv-y0))}" rx="1" fill="${v<0&&df.neg?df.neg:df.c}"><title>${dates[i]}: ${nf(v)}</title></rect>`;
+      if(showLab(i))g+=`<text x="${x+w/2}" y="${H-6}" text-anchor="middle">${lab(dates[i])}</text>`;
+    });
+    const none=empty?`<text x="${W/2}" y="${H/2}" text-anchor="middle">No entries in this period</text>`:"";
+    return `<div class="ch"><div class="chh"><h3>${df.t}</h3><b>${nf(tot)} ${df.u}</b></div><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${df.t} per day">${g}${b}${none}</svg></div>`;
+  }).join("");
+}
+
+const r2=v=>Math.round(v*100)/100;
+function collect(from,to){
+  const by={};
+  E.forEach(e=>{if(e.date>=from&&e.date<=to){addTo(by[e.date]=by[e.date]||{},e)}});
+  const dates=Object.keys(by).sort();
+  const rows=dates.map(d=>{const r=by[d],c=calc(r);return COLS.map(k=>CALC.includes(k)?c[k]:(r[k]||0))});
+  return Object.assign({dates,rows},agg(from,to));
+}
+function dmsg(t){$("dm").textContent=t}
+async function saveFile(name,data){
+  let dl=null;
+  try{if(window.claude&&window.claude.use)dl=await window.claude.use("downloads")}catch(e){}
+  if(dl){
+    try{await dl.save({filename:name,data});dmsg("Ready: "+name)}
+    catch(e){dmsg(e&&e.code==="declined"?"Download cancelled.":"Could not download the file. Please try again.")}
+    return;
+  }
+  const b=data instanceof Blob?data:new Blob([data]);
+  const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=name;
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+  dmsg("Ready: "+name);
+}
+function prep(){
+  const from=$("dfrom").value,to=$("dto").value;
+  if(!from||!to||from>to){dmsg("Pick a start and end date. The start date must come first.");return null}
+  const c=collect(from,to);
+  if(!c.dates.length){dmsg("No entries between these dates.");return null}
+  c.from=from;c.to=to;c.ents=E.filter(e=>e.date>=from&&e.date<=to).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:a.id-b.id);
+  c.sum=COLS.map(k=>[LBL[k],c.T[k],ODO.includes(k)?null:(k==="perkm"?c.avgRate:(c.active?c.T[k]/c.active:0))]);
+  return c;
+}
+const SALES=["sale","cash","ocash"],EXPS=["fuel","food","mobile","topup","toll","salary","maint","oexp"];
+function ledgerRows(T){
+  const r=[],tot=[];
+  SALES.forEach(k=>r.push([NAME[k],T[k]]));r.push(["Total Sale",T.tsale]);tot.push(r.length-1);
+  EXPS.forEach(k=>r.push([NAME[k],T[k]]));r.push(["Total Expenses",T.texp]);tot.push(r.length-1);
+  r.push(["Profit/Loss",T.pl]);tot.push(r.length-1);
+  return{rows:r,tot};
+}
+const FN={all:"MIK-Full-Report_",ledger:"MIK-Ledger_",entries:"MIK-Entries_"};
+const doXls=()=>{
+  if(!window.XLSX){dmsg("The Excel tool could not load. Check your internet and refresh.");return}
+  const c=prep();if(!c)return;
+  const w=$("dwhat").value,all=w==="all";
+  const wb=XLSX.utils.book_new();
+  if(all){
+    const s1=[["MIK LEDGER - Report"],["Period",c.from+" to "+c.to],["Working days",c.active],[],["Item","Total","Avg/day"]].concat(c.sum.map(r=>[r[0],r2(r[1]),r[2]===null?"":r2(r[2])]));
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(s1),"Summary");
+  }
+  if(all||w==="ledger"){
+    const L=ledgerRows(c.T);
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["Sales & Expenses Ledger"],["Period",c.from+" to "+c.to],[],["Item","Amount"]].concat(L.rows.map(x=>[x[0],r2(x[1])]))),"Ledger");
+  }
+  if(all){
+    const s2=[["Date"].concat(COLS.map(k=>LBL[k]))].concat(c.dates.map((d,i)=>[d].concat(c.rows[i].map(r2))));
+    s2.push(["Total"].concat(COLS.map(k=>r2(c.T[k]))));
+    s2.push(["Avg/day"].concat(COLS.map(k=>ODO.includes(k)?"":r2(k==="perkm"?c.avgRate:(c.active?c.T[k]/c.active:0)))));
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(s2),"Daily");
+  }
+  if(all||w==="entries"){
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["Date","Type","Description","Amount"]].concat(c.ents.map(e=>[e.date,NAME[e.head],e.note||"",e.amt]))),"Entries");
+  }
+  const out=XLSX.write(wb,{bookType:"xlsx",type:"array"});
+  saveFile(FN[w]+c.from+"_to_"+c.to+".xlsx",new Blob([out]));
+};
+const doPdf=()=>{
+  if(!(window.jspdf&&window.jspdf.jsPDF)){dmsg("The PDF tool could not load. Check your internet and refresh.");return}
+  const c=prep();if(!c)return;
+  const w=$("dwhat").value,all=w==="all";
+  const doc=new window.jspdf.jsPDF({orientation:"landscape",unit:"mm",format:"a4"});
+  const green=[67,182,73],ink=[13,42,16];
+  let first=true;const page=()=>{if(!first)doc.addPage();first=false};
+  if(all){
+    page();
+    doc.setFontSize(16);doc.text("MIK LEDGER - Report",14,14);
+    doc.setFontSize(10);doc.text("Period: "+c.from+" to "+c.to+"     Working days: "+c.active,14,20);
+    doc.autoTable({startY:24,head:[["Item","Total","Avg/day"]],body:c.sum.map(r=>[r[0],fm(COLS[c.sum.indexOf(r)],r[1]),(r[2]===null?"":fm(COLS[c.sum.indexOf(r)],r[2]))]),theme:"grid",styles:{fontSize:8,cellPadding:1.5},headStyles:{fillColor:green,textColor:ink},columnStyles:{1:{halign:"right"},2:{halign:"right"}},tableWidth:110});
+  }
+  if(all||w==="ledger"){
+    page();
+    doc.setFontSize(14);doc.text("Sales & Expenses Ledger",14,12);
+    doc.setFontSize(10);doc.text("Period: "+c.from+" to "+c.to,14,18);
+    const L=ledgerRows(c.T),tot=new Set(L.tot);
+    doc.autoTable({startY:22,head:[["Item","Amount (Rs)"]],body:L.rows.map(x=>[x[0],f(x[1])]),theme:"grid",styles:{fontSize:9,cellPadding:1.8},headStyles:{fillColor:green,textColor:ink},columnStyles:{1:{halign:"right"}},tableWidth:110,margin:{left:14},didParseCell:d=>{if(d.section==="body"&&tot.has(d.row.index)){const i=L.tot.indexOf(d.row.index);d.cell.styles.fontStyle="bold";if(i===0){d.cell.styles.fillColor=[67,182,73];d.cell.styles.textColor=[13,42,16]}else if(i===1){d.cell.styles.fillColor=[217,65,65];d.cell.styles.textColor=[255,255,255]}else{d.cell.styles.fillColor=[245,189,79];d.cell.styles.textColor=[43,26,0]}}}});
+  }
+  if(all){
+    page();
+    doc.setFontSize(12);doc.text("Daily details",6,10);
+    const body=c.dates.map((d,i)=>[d].concat(c.rows[i].map((v,j)=>fm(COLS[j],v))));
+    body.push(["Total"].concat(COLS.map(k=>fm(k,c.T[k]))));
+    body.push(["Avg/day"].concat(COLS.map(k=>ODO.includes(k)?"":fm(k,k==="perkm"?c.avgRate:(c.active?c.T[k]/c.active:0)))));
+    doc.autoTable({startY:13,head:[["Date"].concat(COLS.map(k=>LBL[k]))],body,theme:"grid",margin:{left:6,right:6},styles:{fontSize:5,cellPadding:0.8,halign:"right"},headStyles:{fillColor:green,textColor:ink},columnStyles:{0:{halign:"left",cellWidth:16}},didParseCell:d=>{if(d.section!=="body")return;const n=body.length;if(d.row.index===n-2){d.cell.styles.fillColor=[245,189,79];d.cell.styles.textColor=[43,26,0];d.cell.styles.fontStyle="bold"}else if(d.row.index===n-1){d.cell.styles.fillColor=[217,65,65];d.cell.styles.textColor=[255,255,255];d.cell.styles.fontStyle="bold"}}});
+  }
+  if(all||w==="entries"){
+    page();
+    doc.setFontSize(12);doc.text("Entries  ("+c.from+" to "+c.to+")",6,10);
+    doc.autoTable({startY:13,head:[["Date","Type","Description","Amount"]],body:c.ents.map(e=>[e.date,NAME[e.head],e.note||"",f(e.amt)]),theme:"grid",margin:{left:6,right:6},styles:{fontSize:7,cellPadding:1},headStyles:{fillColor:green,textColor:ink},columnStyles:{3:{halign:"right"}}});
+  }
+  saveFile(FN[w]+c.from+"_to_"+c.to+".pdf",doc.output("arraybuffer"));
+};
+$("ldl").onclick=()=>{syncDl();show("reports");$("dfmt").focus()};
+$("dfmt").onchange=e=>{const v=e.target.value;e.target.value="";if(v==="pdf")doPdf();else if(v==="xls")doXls()};
+$("dfrom").value=iso.slice(0,7)+"-01";$("dto").value=iso;
+render();
+</script>
+</body>
+</html>
